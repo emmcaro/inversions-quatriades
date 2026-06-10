@@ -1,10 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="ca">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Entrenador d'Acords al Piano</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <title>Entrenador d'Acords</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
@@ -20,19 +23,24 @@
       --disabled-bg: #5c678c;
     }
 
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      text-align: center;
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh; /* Alçada dinàmica de l'àrea visible a Safari */
+      overflow: hidden;
       background-color: var(--bg-dark);
-      color: var(--secondary-text);
+      font-family: 'Inter', Arial, sans-serif;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 10px;
-      box-sizing: border-box;
-      overflow: hidden;
     }
 
     /* Pantalla d'avís per girar el mòbil */
@@ -47,24 +55,11 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-sizing: border-box;
     }
 
-    #landscape-warning h2 {
-      font-family: 'Fredoka One', cursive;
-      margin-bottom: 10px;
-    }
-
-    #landscape-warning p {
-      font-size: 1.1em;
-      color: var(--secondary-text);
-    }
-
-    #landscape-warning .icona-girar {
-      font-size: 4em;
-      margin-bottom: 20px;
-      animation: girar 2s infinite ease-in-out;
-    }
+    #landscape-warning h2 { font-family: 'Fredoka One', cursive; margin: 0 0 10px 0; }
+    #landscape-warning p { font-size: 1.1em; color: var(--secondary-text); margin: 0; text-align: center; }
+    #landscape-warning .icona-girar { font-size: 3.5em; margin-bottom: 15px; animation: girar 2s infinite ease-in-out; }
 
     @keyframes girar {
       0% { transform: rotate(0deg); }
@@ -72,115 +67,105 @@
       100% { transform: rotate(-90deg); }
     }
 
-    /* Activar l'avís si estem en vertical en una pantalla petita */
-    @media screen and (orientation: portrait) and (max-width: 768px) {
+    @media screen and (orientation: portrait) and (max-width: 950px) {
       #landscape-warning { display: flex; }
       .container { display: none !important; }
     }
 
+    /* Contenidor elàstic ultra-compactat per a vistes horitzontals estretes */
     .container {
       background-color: var(--card-bg);
-      padding: 20px;
-      border-radius: 20px;
       width: 100%;
-      max-width: 900px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      height: 100dvh;
+      max-width: 920px;
+      padding: 8px 16px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between; /* Divideix l'espai vertical perfectament */
     }
     
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 30px;
+    }
+
     h1 {
-      font-size: 1.2em;
+      font-size: 1.05em;
       color: var(--primary-text);
       font-weight: 700;
-      margin: 0 0 15px 0;
+      margin: 0;
     }
 
     .top-info {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-      font-size: 0.95em;
+      font-size: 0.85em;
+      height: 20px;
     }
 
     #punts, #temps {
       margin: 0;
-      min-width: 65px;
       font-weight: bold;
       color: var(--primary-text);
     }
     
     .selector-dificultat {
-        display: flex;
-        border: 1px solid var(--disabled-bg);
-        border-radius: 8px;
-        overflow: hidden;
+      display: flex;
+      border: 1px solid var(--disabled-bg);
+      border-radius: 6px;
+      overflow: hidden;
     }
+
     .btn-dificultat {
-        background-color: transparent;
-        color: var(--secondary-text);
-        border: none;
-        padding: 6px 12px;
-        font-size: 0.85em;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background-color 0.2s ease, color 0.2s ease;
+      background-color: transparent;
+      color: var(--secondary-text);
+      border: none;
+      padding: 3px 10px;
+      font-size: 0.8em;
+      font-weight: 700;
+      cursor: pointer;
     }
+
     .btn-dificultat.actiu {
-        background-color: var(--accent-blue);
-        color: var(--primary-text);
+      background-color: var(--accent-blue);
+      color: var(--primary-text);
     }
     
     #pregunta {
       font-family: 'Fredoka One', cursive;
-      font-size: 2.5em;
+      font-size: 1.9em;
       color: var(--primary-text);
-      margin: 0 0 20px 0;
-      min-height: 70px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      line-height: 1.1;
+      line-height: 0.95;
+      flex-grow: 1; /* Ocupa l'espai central variable */
+      min-height: 45px;
     }
 
     .inversio-text {
       font-family: 'Inter', sans-serif;
-      font-size: 0.35em;
+      font-size: 0.4em;
       font-weight: 700;
       color: var(--accent-blue);
-      margin-top: 5px;
+      margin-top: 3px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
     
-    .status-area {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-height: 25px;
-      margin-top: 15px;
-    }
-
-    #resultat {
-      font-weight: bold;
-      font-size: 1.1em;
-      margin: 0;
-    }
-
-    #resum {
-      color: var(--primary-text);
-      font-weight: bold;
-      margin: 0;
-    }
-    
+    /* El Piano s'adapta a l'espai restant de forma segura */
     .piano-keyboard {
       display: flex;
       justify-content: center;
       position: relative;
       width: 100%;
-      height: 180px;
+      height: 42dvh; /* Alçada proporcional controlada */
+      min-height: 95px;
+      max-height: 140px;
     }
 
     .octave {
@@ -192,39 +177,51 @@
     .key {
       border: 1px solid #111;
       cursor: pointer;
-      box-sizing: border-box;
       transition: background-color 0.1s ease;
     }
+
     .key.white {
       width: 14.28%;
       height: 100%;
       background-color: #f9f9f9;
       border-bottom-left-radius: 4px;
       border-bottom-right-radius: 4px;
-      box-shadow: inset 0 -10px 10px rgba(0,0,0,0.1);
+      box-shadow: inset 0 -8px 8px rgba(0,0,0,0.1);
     }
+
     .key.black {
       position: absolute;
       width: 9%;
-      height: 60%;
+      height: 58%;
       background-color: #222;
       z-index: 2;
       border-bottom-left-radius: 3px;
       border-bottom-right-radius: 3px;
-      box-shadow: inset 0 -5px 5px rgba(255,255,255,0.2);
+      box-shadow: inset 0 -4px 4px rgba(255,255,255,0.2);
     }
 
-    .key:not(.disabled):hover { background-color: #e0e0e0; }
+    .key:not(.disabled):hover { background-color: #e2e2e2; }
     .key.black:not(.disabled):hover { background-color: #444; }
     
     .key.selected { background-color: var(--accent-blue) !important; }
     .key.correct { background-color: var(--accent-green) !important; }
     .key.incorrect { background-color: var(--accent-pink) !important; }
-    
-    .key.disabled { 
-        cursor: not-allowed;
-        opacity: 0.8;
+    .key.disabled { cursor: not-allowed; opacity: 0.9; }
+
+    .status-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 25px;
+      margin-top: 2px;
     }
+
+    #resultat, #resum {
+      font-weight: bold;
+      font-size: 0.9em;
+      margin: 0;
+    }
+    #resum { color: var(--primary-text); }
 
     audio { display: none; }
   </style>
@@ -234,19 +231,19 @@
   <div id="landscape-warning">
     <div class="icona-girar">📱</div>
     <h2>Gira el dispositiu</h2>
-    <p>Aquesta aplicació necessita la pantalla en format apaisat per mostrar el piano correctament.</p>
+    <p>Aquesta aplicació necessita format horitzontal per encabir el piano.</p>
   </div>
 
   <div class="container">
-    <div class="top-info">
-      <h1 style="margin: 0;">🎹 Entrenador d'Acords</h1>
+    <div class="top-header">
+      <h1>🎹 Entrenador d'Acords</h1>
       <div class="selector-dificultat">
           <button id="btn-facil" class="btn-dificultat">Fàcil</button>
           <button id="btn-dificil" class="btn-dificultat">Difícil</button>
       </div>
     </div>
 
-    <div class="top-info" style="margin-bottom: 10px;">
+    <div class="top-info">
       <p id="punts">Punts: 0/10</p>
       <p id="temps">Temps: 15s</p>
     </div>
@@ -295,29 +292,16 @@
 
   <script>
     const arrels = ["Do", "Do#", "Re", "Mib", "Mi", "Fa", "Fa#", "Sol", "Lab", "La", "Sib", "Si"];
-    
-    const  qualitatsAcords = {
-      "Maj7": [0, 4, 7, 11],
-      "m7": [0, 3, 7, 10],
-      "7": [0, 4, 7, 10],
-      "m7b5": [0, 3, 6, 10]
+    const qualitatsAcords = {
+      "Maj7": [0, 4, 7, 11], "m7": [0, 3, 7, 10], "7": [0, 4, 7, 10], "m7b5": [0, 3, 6, 10]
     };
-
     const inversionsText = ["Estat fonamental", "1a inversió", "2a inversió", "3a inversió"];
 
-    let estatActual = {
-      arrelIndex: 0,
-      qualitat: "",
-      inversio: 0
-    };
+    let estatActual = { arrelIndex: 0, qualitat: "", inversio: 0 };
+    let notesSeleccionades = []; // Guarda l'ordre de pulsació exacte
+    let punts = 0, totalRespostes = 0, temps = 0, intervalId = null;
+    let nivellDificultat = 'facil', respostaJaDonada = false;
 
-    let notesSeleccionades = [];
-    let punts = 0, totalRespostes = 0;
-    let temps = 0, intervalId = null;
-    let nivellDificultat = 'facil';
-    let respostaJaDonada = false;
-
-    // Elements DOM
     const pianoEl = document.getElementById("piano");
     const preguntaEl = document.getElementById("pregunta");
     const resultatEl = document.getElementById("resultat");
@@ -329,32 +313,19 @@
     const soCorrecte = document.getElementById("soCorrecte");
     const soError = document.getElementById("soError");
     
-    function obtenirTempsMaxim() {
-        return nivellDificultat === 'facil' ? 15 : 10;
-    }
-
     function iniciarPartida(dificultat) {
       nivellDificultat = dificultat;
-      
       btnFacil.classList.toggle('actiu', nivellDificultat === 'facil');
       btnDificil.classList.toggle('actiu', nivellDificultat === 'dificil');
-
-      punts = 0;
-      totalRespostes = 0;
+      punts = 0; totalRespostes = 0;
       puntsEl.textContent = `Punts: ${punts}/10`;
-      resumEl.textContent = '';
-      resultatEl.textContent = '';
+      resumEl.textContent = ''; resultatEl.textContent = '';
       if (intervalId) clearInterval(intervalId);
-
       nouRepte();
     }
 
     function nouRepte() {
-      if (totalRespostes >= 10) {
-        finalitzarPartida();
-        return;
-      }
-      
+      if (totalRespostes >= 10) { finalitzarPartida(); return; }
       resultatEl.textContent = "";
       notesSeleccionades = [];
       document.querySelectorAll('.key').forEach(k => {
@@ -362,22 +333,16 @@
       });
 
       estatActual.arrelIndex = Math.floor(Math.random() * arrels.length);
-      
       const q = Object.keys(qualitatsAcords);
       estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
-
-      if (nivellDificultat === 'facil') {
-          estatActual.inversio = 0;
-      } else {
-          estatActual.inversio = Math.floor(Math.random() * 4);
-      }
+      estatActual.inversio = (nivellDificultat === 'facil') ? 0 : Math.floor(Math.random() * 4);
 
       preguntaEl.innerHTML = `
         ${arrels[estatActual.arrelIndex]}${estatActual.qualitat}
         <div class="inversio-text">${inversionsText[estatActual.inversio]}</div>
       `;
       
-      temps = obtenirTempsMaxim();
+      temps = (nivellDificultat === 'facil') ? 15 : 10;
       tempsEl.textContent = `Temps: ${temps}s`;
       intervalId = setInterval(actualitzarTemps, 1000);
       respostaJaDonada = false;
@@ -397,9 +362,7 @@
 
     function clickPiano(event) {
       const tecla = event.target;
-      if (respostaJaDonada || !tecla.classList.contains('key') || tecla.classList.contains('disabled')) {
-        return;
-      }
+      if (respostaJaDonada || !tecla.classList.contains('key') || tecla.classList.contains('disabled')) return;
 
       const index = parseInt(tecla.dataset.index);
 
@@ -422,6 +385,18 @@
         respostaJaDonada = true;
         clearInterval(intervalId);
 
+        let esCorrecte = true;
+        let errorDordre = false;
+
+        // 1. Validació de l'ordre estricte: de greu a agut (l'index premut ha de ser incremental)
+        for (let i = 0; i < notesSeleccionades.length - 1; i++) {
+            if (notesSeleccionades[i] >= notesSeleccionades[i+1]) {
+                esCorrecte = false;
+                errorDordre = true;
+            }
+        }
+
+        // 2. Validació harmònica/musical
         const seleccionadesOrdenades = [...notesSeleccionades].sort((a, b) => a - b);
         const baixUsuari = seleccionadesOrdenades[0];
         const pitchUsuari = notesSeleccionades.map(n => n % 12).sort((a, b) => a - b);
@@ -431,10 +406,10 @@
         const baixEsperatClass = (estatActual.arrelIndex + intervalBaix) % 12;
         const pitchEsperat = intervals.map(i => (estatActual.arrelIndex + i) % 12).sort((a, b) => a - b);
 
-        let esCorrecte = true;
         if (baixUsuari % 12 !== baixEsperatClass) esCorrecte = false;
         if (JSON.stringify(pitchUsuari) !== JSON.stringify(pitchEsperat)) esCorrecte = false;
 
+        // Pintar feedback visual de les notes
         notesSeleccionades.forEach(idx => {
             const teclaEl = document.querySelector(`[data-index="${idx}"]`);
             if(teclaEl) {
@@ -450,7 +425,11 @@
             resultatEl.style.color = 'var(--accent-green)';
         } else {
             soError.play().catch(() => {});
-            resultatEl.textContent = "Incorrecte!";
+            if (errorDordre) {
+                resultatEl.textContent = "Ordre incorrecte! (De greu a agut)";
+            } else {
+                resultatEl.textContent = "Notes incorrectes!";
+            }
             resultatEl.style.color = 'var(--accent-pink)';
         }
 
@@ -472,8 +451,8 @@
       tempsEl.textContent = "Temps: 0s";
       
       setTimeout(() => {
-          resultatEl.innerHTML = `<button class="btn-dificultat actiu" style="padding: 10px 20px; font-size:1em; border-radius:8px;" onclick="iniciarPartida(nivellDificultat)">Tornar a jugar</button>`;
-      }, 1500);
+          resultatEl.innerHTML = `<button class="btn-dificultat actiu" style="padding: 6px 14px; font-size:0.9em; border-radius:6px; cursor:pointer;" onclick="iniciarPartida(nivellDificultat)">Tornar a jugar</button>`;
+      }, 1400);
     }
 
     btnFacil.addEventListener('click', () => iniciarPartida('facil'));
@@ -486,5 +465,3 @@
   </script>
 </body>
 </html>
-
-```
