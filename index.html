@@ -152,7 +152,7 @@
     
     #pregunta {
       font-family: 'Fredoka One', cursive;
-      font-size: 1.8em;
+      font-size: 1.9em;
       color: var(--primary-text);
       margin: 0;
       display: flex;
@@ -171,6 +171,16 @@
       margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    .progression-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.3em;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      color: var(--secondary-text);
     }
     
     .status-area {
@@ -315,15 +325,16 @@
   <audio id="soError" src="error.mp3" preload="auto"></audio>
 
   <script>
-    const arrels = ["Do", "Do#", "Re", "Mib", "Mi", "Fa", "Fa#", "Sol", "Lab", "La", "Sib", "Si"];
-    // Índexs de les notes alterades dins de l'array 'arrels': Do#(1), Re(2), Mib(3), Fa#(6), Lab(8), Sib(10)
-    const indexsAlterats = [1, 3, 6, 8, 10];
-    
+    const arrels = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+    const teclesBlanques = [0, 2, 4, 5, 7, 9, 11]; // C, D, E, F, G, A, B
+    const teclesNegres   = [1, 3, 6, 8, 10];      // Db, Eb, F#, Ab, Bb
+
+    // Canvi visual de m7b5 a ø7 (més estandarditzat en l'entorn de jazz/modern)
     const qualitatsAcords = {
       "Maj7": [0, 4, 7, 11],
       "m7": [0, 3, 7, 10],
       "7": [0, 4, 7, 10],
-      "m7b5": [0, 3, 6, 10]
+      "ø7": [0, 3, 6, 10]
     };
 
     const inversionsText = ["Estat fonamental", "1a inversió", "2a inversió", "3a inversió"];
@@ -332,7 +343,7 @@
     let notesSeleccionades = []; 
     let punts = 0, totalRespostes = 0;
     let temps = 0, intervalId = null;
-    let nivellDificultat = 'facil';
+    let nivellSeleccionat = 'facil';
     let respostaJaDonada = false;
 
     const pianoEl = document.getElementById("piano");
@@ -348,16 +359,16 @@
     const soError = document.getElementById("soError");
     
     function obtenirTempsMaxim() {
-        if (nivellDificultat === 'facil') return 15;
-        if (nivellDificultat === 'normal') return 10;
-        return 5; // difícil
+        if (nivellSeleccionat === 'facil') return 15;
+        if (nivellSeleccionat === 'normal') return 10;
+        return 5;
     }
 
-    function iniciarPartida(dificultat) {
-      nivellDificultat = dificultat;
-      btnFacil.classList.toggle('actiu', nivellDificultat === 'facil');
-      btnNormal.classList.toggle('actiu', nivellDificultat === 'normal');
-      btnDificil.classList.toggle('actiu', nivellDificultat === 'dificil');
+    function iniciarPartida(mode) {
+      nivellSeleccionat = mode;
+      btnFacil.classList.toggle('actiu', nivellSeleccionat === 'facil');
+      btnNormal.classList.toggle('actiu', nivellSeleccionat === 'normal');
+      btnDificil.classList.toggle('actiu', nivellSeleccionat === 'dificil');
       punts = 0; totalRespostes = 0;
       puntsEl.textContent = `Punts: ${punts}/10`;
       resumEl.textContent = ''; resultatEl.textContent = '';
@@ -373,23 +384,68 @@
           k.classList.remove('correct', 'incorrect', 'selected', 'disabled');
       });
 
-      // Lògica de selecció de l'arrel
-      // A partir de la 5a pregunta (totalRespostes >= 4), hi ha un 50% de probabilitat de forçar nota alterada
-      if (totalRespostes >= 4 && Math.random() < 0.5) {
-          const randomIndexAlterat = Math.floor(Math.random() * indexsAlterats.length);
-          estatActual.arrelIndex = indexsAlterats[randomIndexAlterat];
-      } else {
-          estatActual.arrelIndex = Math.floor(Math.random() * arrels.length);
+      let numPregunta = totalRespostes + 1;
+      let descripcioFase = "";
+
+      if (nivellSeleccionat === 'facil') {
+          // MODE FÀCIL: Sempre estat fonamental, augmenta dificultat d'alteracions a la fonamental
+          estatActual.inversio = 0;
+          
+          if (numPregunta <= 4) {
+              descripcioFase = "Fàcil • Tecles blanques bàsiques";
+              estatActual.arrelIndex = teclesBlanques[Math.floor(Math.random() * teclesBlanques.length)];
+              estatActual.qualitat = Math.random() < 0.5 ? "Maj7" : "m7";
+          } else if (numPregunta <= 7) {
+              descripcioFase = "Fàcil • S'introdueixen acords 7 / ø7";
+              // Un 35% de probabilitat de tecla negra a mitja partida
+              if (Math.random() < 0.35) {
+                  estatActual.arrelIndex = teclesNegres[Math.floor(Math.random() * teclesNegres.length)];
+              } else {
+                  estatActual.arrelIndex = teclesBlanques[Math.floor(Math.random() * teclesBlanques.length)];
+              }
+              const q = Object.keys(qualitatsAcords);
+              estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
+          } else {
+              descripcioFase = "Fàcil • Altes probabilitats de notes negres";
+              // 70% de probabilitats de demanar fonamental alterada al final del mode fàcil
+              if (Math.random() < 0.70) {
+                  estatActual.arrelIndex = teclesNegres[Math.floor(Math.random() * teclesNegres.length)];
+              } else {
+                  estatActual.arrelIndex = teclesBlanques[Math.floor(Math.random() * teclesBlanques.length)];
+              }
+              const q = Object.keys(qualitatsAcords);
+              estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
+          }
+      } 
+      else {
+          // MODES NORMAL I DIFICIL: Totes les espècies d'acords i inversions des de l'inici
+          const q = Object.keys(qualitatsAcords);
+          estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
+          estatActual.inversio = Math.floor(Math.random() * 4); // Inversió completament aleatòria (0 a 3)
+
+          if (numPregunta <= 4) {
+              descripcioFase = "Inversions + predomini de tecles blanques";
+              // Preguntes 1-4: Principalment tecles blanques (75% blanques, 25% negres)
+              if (Math.random() < 0.25) {
+                  estatActual.arrelIndex = teclesNegres[Math.floor(Math.random() * teclesNegres.length)];
+              } else {
+                  estatActual.arrelIndex = teclesBlanques[Math.floor(Math.random() * teclesBlanques.length)];
+              }
+          } else {
+              descripcioFase = "Inversions + moltes fonamentals alterades (b/#)";
+              // A partir de la pregunta 5: 75% de probabilitats que surti tecla negra
+              if (Math.random() < 0.75) {
+                  estatActual.arrelIndex = teclesNegres[Math.floor(Math.random() * teclesNegres.length)];
+              } else {
+                  estatActual.arrelIndex = teclesBlanques[Math.floor(Math.random() * teclesBlanques.length)];
+              }
+          }
       }
 
-      const q = Object.keys(qualitatsAcords);
-      estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
-      
-      // El mode fàcil només estat fonamental. Normal i Difícil tenen inversions aleatòries
-      estatActual.inversio = (nivellDificultat === 'facil') ? 0 : Math.floor(Math.random() * 4);
-
+      // Renderitzat del panell de preguntes
       preguntaEl.innerHTML = `
-        ${arrels[estatActual.arrelIndex]}${estatActual.qualitat}
+        <div class="progression-badge">Pregunta ${numPregunta}/10 • ${descripcioFase}</div>
+        <div>${arrels[estatActual.arrelIndex]}${estatActual.qualitat}</div>
         <div class="inversio-text">${inversionsText[estatActual.inversio]}</div>
       `;
       
@@ -499,7 +555,7 @@
       tempsEl.textContent = "Temps: 0s";
       
       setTimeout(() => {
-          resultatEl.innerHTML = `<button class="btn-dificultat actiu" style="padding: 6px 14px; font-size:0.9em; border-radius:6px; cursor:pointer;" onclick="iniciarPartida(nivellDificultat)">Tornar a jugar</button>`;
+          resultatEl.innerHTML = `<button class="btn-dificultat actiu" style="padding: 6px 14px; font-size:0.9em; border-radius:6px; cursor:pointer;" onclick="iniciarPartida(nivellSeleccionat)">Tornar a jugar</button>`;
       }, 1500);
     }
 
