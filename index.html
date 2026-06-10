@@ -6,8 +6,9 @@
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Piano Acords" />
   
-  <title>Entrenador d'Acords</title>
+  <title>Entrenador d'Acords al Piano</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
@@ -31,7 +32,7 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100dvh; /* Alçada dinàmica de l'àrea visible a Safari */
+      height: 100dvh; /* Alçada dinàmica real de l'espai lliure a Safari */
       overflow: hidden;
       background-color: var(--bg-dark);
       font-family: 'Inter', Arial, sans-serif;
@@ -57,9 +58,22 @@
       padding: 20px;
     }
 
-    #landscape-warning h2 { font-family: 'Fredoka One', cursive; margin: 0 0 10px 0; }
-    #landscape-warning p { font-size: 1.1em; color: var(--secondary-text); margin: 0; text-align: center; }
-    #landscape-warning .icona-girar { font-size: 3.5em; margin-bottom: 15px; animation: girar 2s infinite ease-in-out; }
+    #landscape-warning h2 {
+      font-family: 'Fredoka One', cursive;
+      margin: 0 0 10px 0;
+    }
+
+    #landscape-warning p {
+      font-size: 1.1em;
+      color: var(--secondary-text);
+      margin: 0;
+    }
+
+    #landscape-warning .icona-girar {
+      font-size: 4em;
+      margin-bottom: 20px;
+      animation: girar 2s infinite ease-in-out;
+    }
 
     @keyframes girar {
       0% { transform: rotate(0deg); }
@@ -67,35 +81,37 @@
       100% { transform: rotate(-90deg); }
     }
 
-    @media screen and (orientation: portrait) and (max-width: 950px) {
+    @media screen and (orientation: portrait) and (max-width: 900px) {
       #landscape-warning { display: flex; }
       .container { display: none !important; }
     }
 
-    /* Contenidor elàstic ultra-compactat per a vistes horitzontals estretes */
+    /* Ajust de seguretat per al contenidor principal */
     .container {
       background-color: var(--card-bg);
-      width: 100%;
-      height: 100dvh;
-      max-width: 920px;
       padding: 8px 16px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 860px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* Divideix l'espai vertical perfectament */
+      justify-content: space-between;
+      height: 96dvh; /* Evita fregar el 100% per seguretat amb les barres d'iOS */
     }
     
+    h1 {
+      font-size: 1em;
+      color: var(--primary-text);
+      font-weight: 700;
+      margin: 0;
+    }
+
     .top-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 30px;
-    }
-
-    h1 {
-      font-size: 1.05em;
-      color: var(--primary-text);
-      font-weight: 700;
-      margin: 0;
+      height: 25px;
     }
 
     .top-info {
@@ -103,48 +119,50 @@
       justify-content: space-between;
       align-items: center;
       font-size: 0.85em;
+      margin: 0;
       height: 20px;
     }
 
     #punts, #temps {
       margin: 0;
+      min-width: 65px;
       font-weight: bold;
       color: var(--primary-text);
     }
     
     .selector-dificultat {
-      display: flex;
-      border: 1px solid var(--disabled-bg);
-      border-radius: 6px;
-      overflow: hidden;
+        display: flex;
+        border: 1px solid var(--disabled-bg);
+        border-radius: 6px;
+        overflow: hidden;
     }
-
+    
     .btn-dificultat {
-      background-color: transparent;
-      color: var(--secondary-text);
-      border: none;
-      padding: 3px 10px;
-      font-size: 0.8em;
-      font-weight: 700;
-      cursor: pointer;
+        background-color: transparent;
+        color: var(--secondary-text);
+        border: none;
+        padding: 2px 10px;
+        font-size: 0.75em;
+        font-weight: 700;
+        cursor: pointer;
     }
-
+    
     .btn-dificultat.actiu {
-      background-color: var(--accent-blue);
-      color: var(--primary-text);
+        background-color: var(--accent-blue);
+        color: var(--primary-text);
     }
     
     #pregunta {
       font-family: 'Fredoka One', cursive;
-      font-size: 1.9em;
+      font-size: 1.8em;
       color: var(--primary-text);
+      margin: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       line-height: 0.95;
-      flex-grow: 1; /* Ocupa l'espai central variable */
-      min-height: 45px;
+      flex-grow: 1; /* Permet que s'adapti de forma dinàmica a l'espai central sobrant */
     }
 
     .inversio-text {
@@ -152,20 +170,41 @@
       font-size: 0.4em;
       font-weight: 700;
       color: var(--accent-blue);
-      margin-top: 3px;
+      margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
     
-    /* El Piano s'adapta a l'espai restant de forma segura */
+    .status-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 22px;
+      margin-top: 2px;
+    }
+
+    #resultat {
+      font-weight: bold;
+      font-size: 0.9em;
+      margin: 0;
+    }
+
+    #resum {
+      color: var(--primary-text);
+      font-weight: bold;
+      margin: 0;
+      font-size: 0.9em;
+    }
+    
+    /* El teclat es redimensiona proporcionalment a la mida de la pantalla real */
     .piano-keyboard {
       display: flex;
       justify-content: center;
       position: relative;
       width: 100%;
-      height: 42dvh; /* Alçada proporcional controlada */
-      min-height: 95px;
+      height: 45dvh; /* Ocupa el 45% net de l'alçada disponible a Safari */
       max-height: 140px;
+      min-height: 90px;
     }
 
     .octave {
@@ -177,18 +216,19 @@
     .key {
       border: 1px solid #111;
       cursor: pointer;
+      box-sizing: border-box;
       transition: background-color 0.1s ease;
     }
-
+    
     .key.white {
       width: 14.28%;
       height: 100%;
       background-color: #f9f9f9;
       border-bottom-left-radius: 4px;
       border-bottom-right-radius: 4px;
-      box-shadow: inset 0 -8px 8px rgba(0,0,0,0.1);
+      box-shadow: inset 0 -6px 6px rgba(0,0,0,0.1);
     }
-
+    
     .key.black {
       position: absolute;
       width: 9%;
@@ -200,28 +240,14 @@
       box-shadow: inset 0 -4px 4px rgba(255,255,255,0.2);
     }
 
-    .key:not(.disabled):hover { background-color: #e2e2e2; }
-    .key.black:not(.disabled):hover { background-color: #444; }
-    
     .key.selected { background-color: var(--accent-blue) !important; }
     .key.correct { background-color: var(--accent-green) !important; }
     .key.incorrect { background-color: var(--accent-pink) !important; }
-    .key.disabled { cursor: not-allowed; opacity: 0.9; }
-
-    .status-area {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 25px;
-      margin-top: 2px;
+    
+    .key.disabled { 
+        cursor: not-allowed;
+        opacity: 0.8;
     }
-
-    #resultat, #resum {
-      font-weight: bold;
-      font-size: 0.9em;
-      margin: 0;
-    }
-    #resum { color: var(--primary-text); }
 
     audio { display: none; }
   </style>
@@ -231,7 +257,7 @@
   <div id="landscape-warning">
     <div class="icona-girar">📱</div>
     <h2>Gira el dispositiu</h2>
-    <p>Aquesta aplicació necessita format horitzontal per encabir el piano.</p>
+    <p>Aquesta aplicació necessita la pantalla en format apaisat per funcionar correctament.</p>
   </div>
 
   <div class="container">
@@ -292,15 +318,22 @@
 
   <script>
     const arrels = ["Do", "Do#", "Re", "Mib", "Mi", "Fa", "Fa#", "Sol", "Lab", "La", "Sib", "Si"];
+    
     const qualitatsAcords = {
-      "Maj7": [0, 4, 7, 11], "m7": [0, 3, 7, 10], "7": [0, 4, 7, 10], "m7b5": [0, 3, 6, 10]
+      "Maj7": [0, 4, 7, 11],
+      "m7": [0, 3, 7, 10],
+      "7": [0, 4, 7, 10],
+      "m7b5": [0, 3, 6, 10]
     };
+
     const inversionsText = ["Estat fonamental", "1a inversió", "2a inversió", "3a inversió"];
 
     let estatActual = { arrelIndex: 0, qualitat: "", inversio: 0 };
-    let notesSeleccionades = []; // Guarda l'ordre de pulsació exacte
-    let punts = 0, totalRespostes = 0, temps = 0, intervalId = null;
-    let nivellDificultat = 'facil', respostaJaDonada = false;
+    let notesSeleccionades = []; 
+    let punts = 0, totalRespostes = 0;
+    let temps = 0, intervalId = null;
+    let nivellDificultat = 'facil';
+    let respostaJaDonada = false;
 
     const pianoEl = document.getElementById("piano");
     const preguntaEl = document.getElementById("pregunta");
@@ -313,6 +346,10 @@
     const soCorrecte = document.getElementById("soCorrecte");
     const soError = document.getElementById("soError");
     
+    function obtenirTempsMaxim() {
+        return nivellDificultat === 'facil' ? 15 : 10;
+    }
+
     function iniciarPartida(dificultat) {
       nivellDificultat = dificultat;
       btnFacil.classList.toggle('actiu', nivellDificultat === 'facil');
@@ -342,7 +379,7 @@
         <div class="inversio-text">${inversionsText[estatActual.inversio]}</div>
       `;
       
-      temps = (nivellDificultat === 'facil') ? 15 : 10;
+      temps = obtenirTempsMaxim();
       tempsEl.textContent = `Temps: ${temps}s`;
       intervalId = setInterval(actualitzarTemps, 1000);
       respostaJaDonada = false;
@@ -388,7 +425,6 @@
         let esCorrecte = true;
         let errorDordre = false;
 
-        // 1. Validació de l'ordre estricte: de greu a agut (l'index premut ha de ser incremental)
         for (let i = 0; i < notesSeleccionades.length - 1; i++) {
             if (notesSeleccionades[i] >= notesSeleccionades[i+1]) {
                 esCorrecte = false;
@@ -396,7 +432,6 @@
             }
         }
 
-        // 2. Validació harmònica/musical
         const seleccionadesOrdenades = [...notesSeleccionades].sort((a, b) => a - b);
         const baixUsuari = seleccionadesOrdenades[0];
         const pitchUsuari = notesSeleccionades.map(n => n % 12).sort((a, b) => a - b);
@@ -409,7 +444,6 @@
         if (baixUsuari % 12 !== baixEsperatClass) esCorrecte = false;
         if (JSON.stringify(pitchUsuari) !== JSON.stringify(pitchEsperat)) esCorrecte = false;
 
-        // Pintar feedback visual de les notes
         notesSeleccionades.forEach(idx => {
             const teclaEl = document.querySelector(`[data-index="${idx}"]`);
             if(teclaEl) {
@@ -440,7 +474,7 @@
         totalRespostes++;
         puntsEl.textContent = `Punts: ${punts}/10`;
         document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
-        setTimeout(nouRepte, 2000); 
+        setTimeout(nouRepte, 2200); 
     }
 
     function finalitzarPartida() {
@@ -452,7 +486,7 @@
       
       setTimeout(() => {
           resultatEl.innerHTML = `<button class="btn-dificultat actiu" style="padding: 6px 14px; font-size:0.9em; border-radius:6px; cursor:pointer;" onclick="iniciarPartida(nivellDificultat)">Tornar a jugar</button>`;
-      }, 1400);
+      }, 1500);
     }
 
     btnFacil.addEventListener('click', () => iniciarPartida('facil'));
