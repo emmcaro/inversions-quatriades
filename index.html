@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrenador d'Acords al Piano</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+    :root {
+      --bg-dark: #1C2135;
+      --card-bg: #2C344F;
+      --primary-text: #FFFFFF;
+      --secondary-text: #A9B1D6;
+      --accent-pink: #E04463;
+      --accent-green: #89d489;
+      --accent-blue: #61afef;
+      --disabled-bg: #5c678c;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      background-color: var(--bg-dark);
+      color: var(--secondary-text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 800px; /* Ampliat per a 2 octaves */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      font-size: 1.3em;
+      color: var(--primary-text);
+      font-weight: 700;
+      margin: 0 0 20px 0;
+    }
+
+    .top-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 0.9em;
+    }
+
+    #punts, #temps {
+      margin: 0;
+      min-width: 60px;
+    }
+    
+    .selector-dificultat {
+        display: flex;
+        border: 1px solid var(--disabled-bg);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .btn-dificultat {
+        background-color: transparent;
+        color: var(--secondary-text);
+        border: none;
+        padding: 8px 12px;
+        font-size: 0.8em;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .btn-dificultat.actiu {
+        background-color: var(--accent-blue);
+        color: var(--primary-text);
+    }
+    
+    #pregunta {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2em;
+      color: var(--primary-text);
+      margin: 0 0 30px 0;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      line-height: 1.2;
+    }
+
+    .inversio-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.45em;
+      font-weight: 400;
+      color: var(--accent-blue);
+      margin-top: 5px;
+    }
+    
+    #resultat, #resum {
+      font-weight: bold;
+      font-size: 1.2em;
+      min-height: 30px;
+      color: var(--accent-pink);
+      margin-top: 30px;
+    }
+
+    #resum {
+      color: var(--primary-text);
+    }
+    
+    .piano-keyboard {
+      display: flex;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+
+    /* Nova classe per encapsular octaves i facilitar l'estil de les negres */
+    .octave {
+      width: 50%;
+      display: flex;
+      position: relative;
+    }
+
+    .key {
+      border: 2px solid #333;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: background-color 0.1s ease;
+    }
+    .key.white {
+      width: 14.28%; /* 100% / 7 notes blanques per octava */
+      height: 200px;
+      background-color: #f9f9f9;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+    .key.black {
+      position: absolute;
+      width: 9%; /* Relatiu a la meitat del teclat (l'octava) */
+      height: 120px;
+      background-color: #333;
+      z-index: 2;
+      border-radius: 5px;
+    }
+
+    .key:not(.disabled):hover {
+        background-color: #ddd;
+    }
+    .key.black:not(.disabled):hover {
+        background-color: #555;
+    }
+    
+    /* Colors d'estat */
+    .key.selected { background-color: var(--accent-blue) !important; }
+    .key.correct { background-color: var(--accent-green) !important; }
+    .key.incorrect { background-color: var(--accent-pink) !important; }
+    
+    .key.disabled { 
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎹 Entrenador d'Acords</h1>
+
+    <div class="top-info">
+      <p id="punts">Punts: 0</p>
+      <div class="selector-dificultat">
+          <button id="btn-facil" class="btn-dificultat">Fàcil</button>
+          <button id="btn-dificil" class="btn-dificultat">Difícil</button>
+      </div>
+      <p id="temps">Temps: 20s</p>
+    </div>
+
+    <div id="pregunta">Carregant...</div>
+    
+    <div class="piano-keyboard" id="piano">
+      <div class="octave">
+        <div class="key white" data-index="0"></div>
+        <div class="key white" data-index="2"></div>
+        <div class="key white" data-index="4"></div>
+        <div class="key white" data-index="5"></div>
+        <div class="key white" data-index="7"></div>
+        <div class="key white" data-index="9"></div>
+        <div class="key white" data-index="11"></div>
+        <div class="key black" data-index="1" style="left: 9.7%;"></div>
+        <div class="key black" data-index="3" style="left: 24%;"></div>
+        <div class="key black" data-index="6" style="left: 52.8%;"></div>
+        <div class="key black" data-index="8" style="left: 67.1%;"></div>
+        <div class="key black" data-index="10" style="left: 81.4%;"></div>
+      </div>
+      <div class="octave">
+        <div class="key white" data-index="12"></div>
+        <div class="key white" data-index="14"></div>
+        <div class="key white" data-index="16"></div>
+        <div class="key white" data-index="17"></div>
+        <div class="key white" data-index="19"></div>
+        <div class="key white" data-index="21"></div>
+        <div class="key white" data-index="23"></div>
+        <div class="key black" data-index="13" style="left: 9.7%;"></div>
+        <div class="key black" data-index="15" style="left: 24%;"></div>
+        <div class="key black" data-index="18" style="left: 52.8%;"></div>
+        <div class="key black" data-index="20" style="left: 67.1%;"></div>
+        <div class="key black" data-index="22" style="left: 81.4%;"></div>
+      </div>
+    </div>
+
+    <p id="resultat"></p>
+    <p id="resum"></p>
+  </div>
+
+  <audio id="soCorrecte" src="sounds/correcte.mp3" preload="auto"></audio>
+  <audio id="soError" src="sounds/error.mp3" preload="auto"></audio>
+  <audio id="soBenvinguda" src="sounds/benvinguda.mp3" preload="auto"></audio>
+
+  <script>
+    const arrels = ["Do", "Do#", "Re", "Mib", "Mi", "Fa", "Fa#", "Sol", "Lab", "La", "Sib", "Si"];
+    
+    // Mapeig d'intervals segons la qualitat de l'acord (semitons des de l'arrel)
+    const qualitatsAcords = {
+      "Maj7": [0, 4, 7, 11],
+      "m7": [0, 3, 7, 10],
+      "7": [0, 4, 7, 10],
+      "m7b5": [0, 3, 6, 10]
+    };
+
+    const inversionsText = ["Estat fonamental", "1a inversió", "2a inversió", "3a inversió"];
+
+    let estatActual = {
+      arrelIndex: 0,
+      qualitat: "",
+      inversio: 0 // 0=Fonamental, 1=1a inv, etc.
+    };
+
+    let notesSeleccionades = [];
+    let punts = 0, totalRespostes = 0;
+    let temps = 0, intervalId = null;
+    let nivellDificultat = 'facil';
+    let respostaJaDonada = false;
+
+    // Elements DOM
+    const pianoEl = document.getElementById("piano");
+    const preguntaEl = document.getElementById("pregunta");
+    const resultatEl = document.getElementById("resultat");
+    const puntsEl = document.getElementById("punts");
+    const tempsEl = document.getElementById("temps");
+    const resumEl = document.getElementById("resum");
+    const btnFacil = document.getElementById('btn-facil');
+    const btnDificil = document.getElementById('btn-dificil');
+    const soCorrecte = document.getElementById("soCorrecte");
+    const soError = document.getElementById("soError");
+    const soBenvinguda = document.getElementById("soBenvinguda");
+    
+    function obtenirTempsMaxim() {
+        return nivellDificultat === 'facil' ? 20 : 30;
+    }
+
+    function iniciarPartida(dificultat) {
+      nivellDificultat = dificultat;
+      
+      btnFacil.classList.toggle('actiu', nivellDificultat === 'facil');
+      btnDificil.classList.toggle('actiu', nivellDificultat === 'dificil');
+
+      punts = 0;
+      totalRespostes = 0;
+      puntsEl.textContent = `Punts: ${punts}`;
+      resumEl.textContent = '';
+      resultatEl.textContent = '';
+      if (intervalId) clearInterval(intervalId);
+
+      soBenvinguda.play().catch(() => {});
+      nouRepte();
+    }
+
+    function nouRepte() {
+      if (totalRespostes >= 10) {
+        finalitzarPartida();
+        return;
+      }
+      
+      resultatEl.textContent = "";
+      notesSeleccionades = [];
+      document.querySelectorAll('.key').forEach(k => {
+          k.classList.remove('correct', 'incorrect', 'selected', 'disabled');
+      });
+
+      // Generar pregunta
+      estatActual.arrelIndex = Math.floor(Math.random() * arrels.length);
+      
+      if (nivellDificultat === 'facil') {
+          // Només Maj7 i m7, només estat fonamental
+          const q = ["Maj7", "m7"];
+          estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
+          estatActual.inversio = 0;
+      } else {
+          // Tots els acords, totes les inversions
+          const q = Object.keys(qualitatsAcords);
+          estatActual.qualitat = q[Math.floor(Math.random() * q.length)];
+          estatActual.inversio = Math.floor(Math.random() * 4);
+      }
+
+      preguntaEl.innerHTML = `
+        ${arrels[estatActual.arrelIndex]}${estatActual.qualitat}
+        <div class="inversio-text">${inversionsText[estatActual.inversio]}</div>
+      `;
+      
+      temps = obtenirTempsMaxim();
+      tempsEl.textContent = `Temps: ${temps}s`;
+      intervalId = setInterval(actualitzarTemps, 1000);
+      respostaJaDonada = false;
+    }
+
+    function actualitzarTemps() {
+      temps--;
+      tempsEl.textContent = `Temps: ${temps}s`;
+      if (temps < 0 && !respostaJaDonada) {
+        clearInterval(intervalId);
+        soError.play();
+        resultatEl.textContent = "Temps esgotat!";
+        resultatEl.style.color = 'var(--accent-pink)';
+        finalitzarTorn();
+      }
+    }
+
+    function clickPiano(event) {
+      const tecla = event.target;
+      if (respostaJaDonada || !tecla.classList.contains('key') || tecla.classList.contains('disabled')) {
+        return;
+      }
+
+      const index = parseInt(tecla.dataset.index);
+
+      // Gestionar selecció/deselecció
+      if (notesSeleccionades.includes(index)) {
+          notesSeleccionades = notesSeleccionades.filter(n => n !== index);
+          tecla.classList.remove('selected');
+      } else {
+          if (notesSeleccionades.length < 4) {
+              notesSeleccionades.push(index);
+              tecla.classList.add('selected');
+          }
+      }
+
+      // Avaluar quan en tenim 4
+      if (notesSeleccionades.length === 4) {
+          avaluarResposta();
+      }
+    }
+
+    function avaluarResposta() {
+        respostaJaDonada = true;
+        clearInterval(intervalId);
+
+        // Ordenar notes de greu a agut
+        const seleccionadesOrdenades = [...notesSeleccionades].sort((a, b) => a - b);
+        const baixUsuari = seleccionadesOrdenades[0];
+        
+        // Classes de to (mod 12) introduïdes per l'usuari
+        const pitchUsuari = notesSeleccionades.map(n => n % 12).sort((a, b) => a - b);
+
+        // Dades esperades
+        const intervals = qualitatsAcords[estatActual.qualitat];
+        
+        // 1. Calcular el baix esperat segons la inversió
+        const intervalBaix = intervals[estatActual.inversio];
+        const baixEsperatClass = (estatActual.arrelIndex + intervalBaix) % 12;
+
+        // 2. Calcular les classes de to de l'acord complet
+        const pitchEsperat = intervals.map(i => (estatActual.arrelIndex + i) % 12).sort((a, b) => a - b);
+
+        // Comprovació
+        let esCorrecte = true;
+        if (baixUsuari % 12 !== baixEsperatClass) esCorrecte = false;
+        if (JSON.stringify(pitchUsuari) !== JSON.stringify(pitchEsperat)) esCorrecte = false;
+
+        // Feedback visual
+        notesSeleccionades.forEach(idx => {
+            const teclaEl = document.querySelector(`[data-index="${idx}"]`);
+            if(teclaEl) {
+                teclaEl.classList.remove('selected');
+                teclaEl.classList.add(esCorrecte ? 'correct' : 'incorrect');
+            }
+        });
+
+        if (esCorrecte) {
+            punts++;
+            soCorrecte.play();
+            resultatEl.textContent = "Molt bé!";
+            resultatEl.style.color = 'var(--accent-green)';
+        } else {
+            soError.play();
+            resultatEl.textContent = "Incorrecte!";
+            resultatEl.style.color = 'var(--accent-pink)';
+        }
+
+        finalitzarTorn();
+    }
+    
+    function finalitzarTorn() {
+        totalRespostes++;
+        puntsEl.textContent = `Punts: ${punts}`;
+        document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
+        setTimeout(nouRepte, 2500); // Pausa més llarga per visualitzar l'error/encert
+    }
+
+    function finalitzarPartida() {
+      preguntaEl.innerHTML = "🎉";
+      resumEl.textContent = `Partida acabada! Has fet ${punts} punts de 10.`;
+      document.querySelectorAll('.key').forEach(k => k.classList.add('disabled'));
+      if(intervalId) clearInterval(intervalId);
+      tempsEl.textContent = "Temps: 0s";
+    }
+
+    btnFacil.addEventListener('click', () => iniciarPartida('facil'));
+    btnDificil.addEventListener('click', () => iniciarPartida('dificil'));
+    pianoEl.addEventListener("click", clickPiano);
+
+    window.onload = () => {
+      iniciarPartida('facil');
+    };
+  </script>
+</body>
+</html>
